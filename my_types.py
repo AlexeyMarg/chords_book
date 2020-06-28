@@ -1,13 +1,20 @@
 import tkinter as tk
 import tkinter.messagebox as mb
+import os
 
 
 class main_window:
+    song_path = os.getcwd() + '\\song_files'
+    song_list = []
+    current_song_list = []
+
     def __init__(self, parent):
         self.parent = parent
         self.parent.title('Chords Book')
+        self.get_all_songs()
+        self.current_song_list = self.song_list.copy()
         self.initUI()
-        self.get_songs()
+
 
     def initUI(self):
         search_frame = tk.LabelFrame(self.parent, text='Search')
@@ -25,25 +32,45 @@ class main_window:
         chords_button.grid(row=1, column=5, padx=2, pady=2)
         add_button = tk.Button(self.parent, text='Add', width=8, pady=2)
         add_button.grid(row=2, column=1)
-        delete_button = tk.Button(self.parent, text='Delete', width=8, pady=2)
-        delete_button.grid(row=2, column=2)
+        self.delete_button = tk.Button(self.parent, text='Delete', width=8, pady=2, command=self.press_delete)
+        self.delete_button.grid(row=2, column=2)
 
-        song_list = tk.Listbox(width=32, height=40)
-        song_list.grid(row=4, column=1, columnspan=2, sticky='wns')
+        self.song_list_box = tk.Listbox(width=32, height=40)
+        self.song_list_box.grid(row=4, column=1, columnspan=2, sticky='wns')
+        self.song_list_box.bind('<Double-Button-1>', self.song_list_box_press)
         song_list_scroll = tk.Scrollbar(self.parent)
-        song_list.config(yscrollcommand=song_list_scroll.set)
-        song_list_scroll.config(command=song_list.yview)
+        self.song_list_box.config(yscrollcommand=song_list_scroll.set)
+        song_list_scroll.config(command=self.song_list_box.yview)
         song_list_scroll.grid(row=4, column=2, sticky='ens')
+        for i in self.song_list:
+            self.song_list_box.insert('end', i['artist']+' - '+i['song'])
 
-        song_text = tk.Text(self.parent, width=50, height=40)
-        song_text.grid(row=4, column=3, rowspan=3, columnspan=4)
+
+        self.song_text = tk.Text(self.parent, width=50, height=40)
+        self.song_text.grid(row=4, column=3, rowspan=3, columnspan=4)
         text_scroll = tk.Scrollbar(self.parent)
-        text_scroll.config(command=song_text.yview)
-        song_text.config(yscrollcommand=text_scroll.set)
-        text_scroll.grid(row=4,column=6, sticky='ens')
+        text_scroll.config(command=self.song_text.yview)
+        self.song_text.config(yscrollcommand=text_scroll.set)
+        text_scroll.grid(row=4, column=6, sticky='ens')
 
-    def get_songs(self):
-        pass
+    def get_all_songs(self):
+        all_files = os.listdir(self.song_path)
+
+        song_files = []
+        for i in range(len(all_files)):
+            temp = all_files[i].split('.')
+            if temp[len(temp) - 1] == 'sng':
+                song_files.append(all_files[i])
+
+        for i in song_files:
+            f = open(self.song_path + '\\' + i, 'r')
+            artist = f.readline()[7:-1]
+            song = f.readline()[5:-1]
+            song_file = self.song_path + '\\' + i
+            temp = {'artist': artist, 'song': song, 'file': song_file}
+            self.song_list.append(temp)
+            f.close()
+
 
     def press_search(self):
         pass
@@ -52,14 +79,39 @@ class main_window:
         pass
 
     def press_delete(self):
-        pass
+        selection = self.song_list_box.curselection()[0]
+        answer = mb.askyesno(title="Removing", message="Do you want to remove selected song?")
+        if answer:
+            self.song_list_box.delete(selection)
+            os.remove(self.song_list[selection]['file'])
+            del self.song_list[selection]
+            del self.current_song_list[selection]
+        print(self.song_list)
+
 
     def press_chords(self):
         pass
 
+    def song_list_box_press(self, event):
+        selection = self.song_list_box.curselection()[0]
+        print(selection)
+        f = open(self.song_list[selection]['file'], 'r')
+        f.readline()
+        f.readline()
+        temp = ''
+        for i in f.readlines():
+            temp = temp + i
+        f.close()
+        self.song_text.delete(1.0, 'end')
+        self.song_text.insert(1.0, self.current_song_list[selection]['artist']+
+                              ' - '+self.current_song_list[selection]['song'])
+        self.song_text.insert('end', temp)
+
+
 class add_song_window:
     def __init__(self):
         pass
+
 
 class show_chord_window:
     def __init__(self):

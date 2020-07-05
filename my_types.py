@@ -138,13 +138,13 @@ class add_song_window:
         song = self.song_entry.get()
         text = self.save_text.get(1.0, 'end')
 
-       # try:
-        file = open(main_window.song_path+'\\'+artist+'-'+song+'.sng', 'w', encoding='utf-8')
-        file.write('artist: '+artist+'\nsong: '+song+'\n\n'+text)
-        file.close()
-        self.aswindow.destroy()
-        #except:
-         #   mb.showerror('Error!', 'Unable to save file')
+        try:
+            file = open(main_window.song_path+'\\'+artist+'-'+song+'.sng', 'w', encoding='utf-8')
+            file.write('artist: '+artist+'\nsong: '+song+'\n\n'+text)
+            file.close()
+            self.aswindow.destroy()
+        except:
+            mb.showerror('Error!', 'Unable to save file')
 
         temp = {'artist': artist, 'song': song, 'file': artist+'-'+song+'.sng'}
         main_window.song_list.append(temp)

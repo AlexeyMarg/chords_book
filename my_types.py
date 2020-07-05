@@ -30,7 +30,7 @@ class main_window:
         search_button.grid(row=1, column=4, padx=2)
         chords_button = tk.Button(self.parent, text='Chords', width=8)
         chords_button.grid(row=1, column=5, padx=2, pady=2)
-        add_button = tk.Button(self.parent, text='Add', width=8, pady=2)
+        add_button = tk.Button(self.parent, text='Add', width=8, pady=2, command=self.press_add)
         add_button.grid(row=2, column=1)
         self.delete_button = tk.Button(self.parent, text='Delete', width=8, pady=2, command=self.press_delete)
         self.delete_button.grid(row=2, column=2)
@@ -76,7 +76,8 @@ class main_window:
         pass
 
     def press_add(self):
-        pass
+        self.aswindow = add_song_window(self.parent)
+
 
     def press_delete(self):
         selection = self.song_list_box.curselection()[0]
@@ -86,7 +87,6 @@ class main_window:
             os.remove(self.song_list[selection]['file'])
             del self.song_list[selection]
             del self.current_song_list[selection]
-        print(self.song_list)
 
 
     def press_chords(self):
@@ -109,8 +109,48 @@ class main_window:
 
 
 class add_song_window:
-    def __init__(self):
-        pass
+    def __init__(self, parent):
+        self.parent = parent
+        self.initUI()
+
+    def initUI(self):
+        self.aswindow = tk.Toplevel(self.parent)
+        self.aswindow.title('Add song')
+        artist_label = tk.Label(self.aswindow, text='Artist: ', width=10)
+        artist_label.grid(row=1, column=1, pady=4)
+        self.artist_entry = tk.Entry(self.aswindow, width=30)
+        self.artist_entry.grid(row=1, column=2, pady=4)
+        song_label = tk.Label(self.aswindow, text='Song: ', width=10)
+        song_label.grid(row=2, column=1, pady=4)
+        self.song_entry = tk.Entry(self.aswindow, width=30)
+        self.song_entry.grid(row=2, column=2, padx=2, pady=4)
+        save_button = tk.Button(self.aswindow, text='Save', width=10, command=self.press_save)
+        save_button.grid(row=1, column=3, padx=2, pady=4)
+        self.save_text = tk.Text(self.aswindow, width=50, height=40)
+        self.save_text.grid(row=3, column=1, columnspan=3)
+        save_text_scroll = tk.Scrollbar(self.aswindow)
+        save_text_scroll.config(command=self.save_text.yview)
+        self.save_text.config(yscrollcommand=save_text_scroll.set)
+        save_text_scroll.grid(row=3, column=3, sticky='ens')
+
+    def press_save(self):
+        artist = self.artist_entry.get()
+        song = self.song_entry.get()
+        text = self.save_text.get(1.0, 'end')
+
+       # try:
+        file = open(main_window.song_path+'\\'+artist+'-'+song+'.sng', 'w', encoding='utf-8')
+        file.write('artist: '+artist+'\nsong: '+song+'\n\n'+text)
+        file.close()
+        self.aswindow.destroy()
+        #except:
+         #   mb.showerror('Error!', 'Unable to save file')
+
+        temp = {'artist': artist, 'song': song, 'file': artist+'-'+song+'.sng'}
+        main_window.song_list.append(temp)
+        main_window.song_list.clear()
+        main_window.get_all_songs(main_window(self.parent))
+
 
 
 class show_chord_window:

@@ -19,14 +19,14 @@ class main_window:
     def initUI(self):
         search_frame = tk.LabelFrame(self.parent, text='Search')
         search_frame.grid(row=1, column=1, columnspan=4, padx=2, pady=2, sticky='w')
-        search_entry = tk.Entry(search_frame, width=20)
-        search_entry.grid(row=1, column=1, columnspan=2, padx=2)
-        menu_var = tk.StringVar()
-        menu_var.set('Any')
-        search_menu = tk.OptionMenu(search_frame, menu_var, 'Any', 'Artist', 'Text')
-        search_menu.config(width=8)
-        search_menu.grid(row=1, column=3)
-        search_button = tk.Button(search_frame, text='Search', width=8)
+        self.search_entry = tk.Entry(search_frame, width=20)
+        self.search_entry.grid(row=1, column=1, columnspan=2, padx=2)
+        self.menu_var = tk.StringVar()
+        self.menu_var.set('Any')
+        self.search_menu = tk.OptionMenu(search_frame, self.menu_var, 'Any', 'Artist', 'Song')
+        self.search_menu.config(width=8)
+        self.search_menu.grid(row=1, column=3)
+        search_button = tk.Button(search_frame, text='Search', width=8, command=self.press_search)
         search_button.grid(row=1, column=4, padx=2)
         chords_button = tk.Button(self.parent, text='Chords', width=8)
         chords_button.grid(row=1, column=5, padx=2, pady=2)
@@ -57,6 +57,7 @@ class main_window:
         all_files = os.listdir(self.song_path)
 
         song_files = []
+        self.song_list = []
         for i in range(len(all_files)):
             temp = all_files[i].split('.')
             if temp[len(temp) - 1] == 'sng':
@@ -73,7 +74,27 @@ class main_window:
 
 
     def press_search(self):
-        pass
+        search_text = self.search_entry.get()
+        search_field = self.menu_var.get()
+        self.get_all_songs()
+        self.current_song_list = []
+        if search_field == 'Artist':
+            for i in self.song_list:
+                if search_text in i['artist']:
+                    self.current_song_list.append(i)
+        elif search_field == 'Song':
+            for i in self.song_list:
+                if search_text in i['song']:
+                    self.current_song_list.append(i)
+        else:
+            for i in self.song_list:
+                if (search_text in i['song']) or (search_text in i['artist']):
+                    self.current_song_list.append(i)
+        self.song_list_box.delete(0, 'end')
+        for i in self.current_song_list:
+            self.song_list_box.insert('end', i['artist']+' - '+i['song'])
+
+
 
     def press_add(self):
         self.aswindow = add_song_window(self.parent)

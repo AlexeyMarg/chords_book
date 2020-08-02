@@ -15,7 +15,6 @@ class main_window:
         self.current_song_list = self.song_list.copy()
         self.initUI()
 
-
     def initUI(self):
         search_frame = tk.LabelFrame(self.parent, text='Search')
         search_frame.grid(row=1, column=1, columnspan=4, padx=2, pady=2, sticky='w')
@@ -28,7 +27,7 @@ class main_window:
         self.search_menu.grid(row=1, column=3)
         search_button = tk.Button(search_frame, text='Search', width=8, command=self.press_search)
         search_button.grid(row=1, column=4, padx=2)
-        chords_button = tk.Button(self.parent, text='Chords', width=8)
+        chords_button = tk.Button(self.parent, text='Chords', width=8, command=self.press_chords)
         chords_button.grid(row=1, column=5, padx=2, pady=2)
         add_button = tk.Button(self.parent, text='Add', width=8, pady=2, command=self.press_add)
         add_button.grid(row=2, column=1)
@@ -43,8 +42,7 @@ class main_window:
         song_list_scroll.config(command=self.song_list_box.yview)
         song_list_scroll.grid(row=4, column=2, sticky='ens')
         for i in self.song_list:
-            self.song_list_box.insert('end', i['artist']+' - '+i['song'])
-
+            self.song_list_box.insert('end', i['artist'] + ' - ' + i['song'])
 
         self.song_text = tk.Text(self.parent, width=50, height=40)
         self.song_text.grid(row=4, column=3, rowspan=3, columnspan=4)
@@ -72,7 +70,6 @@ class main_window:
             self.song_list.append(temp)
             f.close()
 
-
     def press_search(self):
         search_text = self.search_entry.get()
         search_field = self.menu_var.get()
@@ -92,13 +89,10 @@ class main_window:
                     self.current_song_list.append(i)
         self.song_list_box.delete(0, 'end')
         for i in self.current_song_list:
-            self.song_list_box.insert('end', i['artist']+' - '+i['song'])
-
-
+            self.song_list_box.insert('end', i['artist'] + ' - ' + i['song'])
 
     def press_add(self):
         self.aswindow = add_song_window(self.parent)
-
 
     def press_delete(self):
         selection = self.song_list_box.curselection()[0]
@@ -109,9 +103,8 @@ class main_window:
             del self.song_list[selection]
             del self.current_song_list[selection]
 
-
     def press_chords(self):
-        pass
+        self.chords_window = chord_window(self.parent)
 
     def song_list_box_press(self, event):
         selection = self.song_list_box.curselection()[0]
@@ -124,8 +117,8 @@ class main_window:
             temp = temp + i
         f.close()
         self.song_text.delete(1.0, 'end')
-        self.song_text.insert(1.0, self.current_song_list[selection]['artist']+
-                              ' - '+self.current_song_list[selection]['song'])
+        self.song_text.insert(1.0, self.current_song_list[selection]['artist'] +
+                              ' - ' + self.current_song_list[selection]['song'])
         self.song_text.insert('end', temp)
 
 
@@ -160,20 +153,40 @@ class add_song_window:
         text = self.save_text.get(1.0, 'end')
 
         try:
-            file = open(main_window.song_path+'\\'+artist+'-'+song+'.sng', 'w', encoding='utf-8')
-            file.write('artist: '+artist+'\nsong: '+song+'\n\n'+text)
+            file = open(main_window.song_path + '\\' + artist + '-' + song + '.sng', 'w', encoding='utf-8')
+            file.write('artist: ' + artist + '\nsong: ' + song + '\n\n' + text)
             file.close()
             self.aswindow.destroy()
         except:
             mb.showerror('Error!', 'Unable to save file')
 
-        temp = {'artist': artist, 'song': song, 'file': artist+'-'+song+'.sng'}
+        temp = {'artist': artist, 'song': song, 'file': artist + '-' + song + '.sng'}
         main_window.song_list.append(temp)
         main_window.song_list.clear()
         main_window.get_all_songs(main_window(self.parent))
 
 
+class chord_window:
+    def __init__(self, parent):
+        self.parent = parent
+        self.initUI()
 
-class show_chord_window:
-    def __init__(self):
-        pass
+    def initUI(self):
+        self.chords_window = tk.Toplevel(self.parent)
+        self.chords_window.title('Chords')
+        self.chords_entry = tk.Entry(self.chords_window, width=8)
+        self.chords_entry.grid(row=1, column=1, padx=2, pady=2)
+        self.chords_button = tk.Button(self.chords_window, text='Search', command=self.chords_search)
+        self.chords_button.grid(row=1, column=2, padx=2, pady=2)
+        self.chords_list = tk.Listbox(self.chords_window, width=10, height=12)
+        self.chords_list.grid(row=2, column=1, padx=2, pady=2)
+        self.chords_list_scroll = tk.Scrollbar(self.chords_window, command=self.chords_list.yview)
+        self.chords_list_scroll.grid(row=2, column=1, sticky='nse')
+        self.chords_list.config(yscrollcommand=self.chords_list_scroll.set)
+        self.chord_canvas = tk.Canvas(self.chords_window, width=200, height=200, bg='white')
+        self.chord_canvas.grid(row=2, column=2, padx=2, pady=2)
+
+
+
+    def chords_search(self):
+        print(1)

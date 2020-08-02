@@ -1,6 +1,7 @@
 import tkinter as tk
 import tkinter.messagebox as mb
 import os
+import json
 
 
 class main_window:
@@ -108,7 +109,6 @@ class main_window:
 
     def song_list_box_press(self, event):
         selection = self.song_list_box.curselection()[0]
-        print(selection)
         f = open(self.song_list[selection]['file'], 'r')
         f.readline()
         f.readline()
@@ -174,19 +174,57 @@ class chord_window:
     def initUI(self):
         self.chords_window = tk.Toplevel(self.parent)
         self.chords_window.title('Chords')
-        self.chords_entry = tk.Entry(self.chords_window, width=8)
+        self.chords_entry = tk.Entry(self.chords_window, width=15)
         self.chords_entry.grid(row=1, column=1, padx=2, pady=2)
         self.chords_button = tk.Button(self.chords_window, text='Search', command=self.chords_search)
-        self.chords_button.grid(row=1, column=2, padx=2, pady=2)
-        self.chords_list = tk.Listbox(self.chords_window, width=10, height=12)
+        self.chords_button.grid(row=1, column=2, padx=2, pady=2, sticky='w')
+
+        self.chords_list = tk.Listbox(self.chords_window, width=15, height=12)
         self.chords_list.grid(row=2, column=1, padx=2, pady=2)
         self.chords_list_scroll = tk.Scrollbar(self.chords_window, command=self.chords_list.yview)
         self.chords_list_scroll.grid(row=2, column=1, sticky='nse')
         self.chords_list.config(yscrollcommand=self.chords_list_scroll.set)
-        self.chord_canvas = tk.Canvas(self.chords_window, width=200, height=200, bg='white')
+        self.get_all_chords()
+        for i in self.all_chords:
+            self.chords_list.insert('end', i['name'] + ' - ' + str(i['lad']))
+        self.chords_list.bind('<Double-Button-1>', self.chords_list_press)
+
+        self.chord_canvas = tk.Canvas(self.chords_window, width=200, height=165, bg='white')
         self.chord_canvas.grid(row=2, column=2, padx=2, pady=2)
 
-
+    def get_all_chords(self):
+        with open('chords.json', 'r') as chords:
+            self.all_chords = json.load(chords)
 
     def chords_search(self):
-        print(1)
+        self.search_chord = self.chords_entry.get()
+        if self.search_chord == '':
+            for i in self.all_chords:
+                self.chords_list.insert('end', i['name'] + ' - ' + str(i['lad']))
+        self.chords_list.delete(0, 'end')
+        for i in self.all_chords:
+            if self.search_chord in i['name']:
+                self.chords_list.insert('end', i['name'] + ' - ' + str(i['lad']))
+
+    def chords_list_press(self, event):
+        temp = self.chords_list.curselection()[0]
+        self.draw_chord = self.all_chords[temp]
+        self.chord_canvas.delete('all')
+        for temp in range(6):
+            self.chord_canvas.create_line(20, 20+temp*25, 180, 20+temp*25)
+        for temp in range(3):
+            self.chord_canvas.create_line(60+temp*40, 20, 60+temp*40, 145)
+        self.draw_chord_keys = list(self.draw_chord.keys())
+        self.draw_chord_keys.remove('name')
+        self.draw_chord_keys.remove('lad')
+
+        temp=self.draw_chord['lad']
+        for i in range(4):
+            self.chord_canvas.create_text(35+i*40, 10, text=str(temp+i))
+
+        for i in self.draw_chord_keys:
+            if self.draw_chord[i]>0:
+                self.chord_canvas.create_oval(40*(self.draw_chord[i]-temp)+35, 25*int(i)-10,
+                                              40*(self.draw_chord[i]-temp)+45, 25*int(i), fill='black')
+
+
